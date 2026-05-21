@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kryzos System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            /* Chặn hiện menu mặc định trên điện thoại khi chạm giữ */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #0b0f12;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .phone-container {
+            width: 360px;
+            background: #0d131a;
+            border: 2px solid #1a242f;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.1);
+            position: relative;
+            min-height: 580px;
+        }
+
+        /* KHUNG ĐĂNG NHẬP KEY */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            height: 100%;
+        }
+
+        .login-title {
+            color: #00ffcc;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+        }
+
+        .key-input {
+            width: 100%;
+            background: #070b10;
+            border: 1px solid #1a242f;
+            padding: 12px;
+            border-radius: 8px;
+            color: #00ffcc;
+            font-size: 0.9rem;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+        .key-input:focus {
+            border-color: #00ffcc;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: rgba(0, 255, 204, 0.05);
+            border: 1px solid #00ffcc;
+            color: #00ffcc;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background: rgba(0, 255, 204, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+        }
+
+        .error-msg {
+            color: #ff5f56;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* KHUNG GIAO DIỆN HỆ THỐNG CHÍNH */
+        .main-content {
+            display: none;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: #111a24;
+            border: 1px solid #1a242f;
+            color: #5f758a;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 255, 204, 0.1);
+            border-color: #00ffcc;
+            color: #00ffcc;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+        }
+
+        /* Section thông tin ADMIN */
+        .admin-section {
+            background: linear-gradient(135deg, #111a24 0%, #162535 100%);
+            border: 1px dashed #00ffcc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .admin-name {
+            color: #ffffff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .admin-buy-key {
+            color: #ffbd2e;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .admin-contact {
+            color: #00ffcc;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* Nút gạt Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #1a242f;
+            transition: .3s;
+            border-radius: 22px;
+            border: 1px solid #34495e;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; width: 14px;
+            left: 3px; bottom: 3px;
+            background-color: #7f8c8d;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: rgba(0, 255, 204, 0.1);
+            border-color: #00ffcc;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+            background-color: #00ffcc;
+            box-shadow: 0 0 8px #00ffcc;
+        }
+
+        /* Terminal Console */
+        .terminal-box {
+            background: #070b10;
+            border: 1px solid #1a242f;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            height: 140px;
+            overflow-y: auto;
+        }
+
+        .terminal-box::-webkit-scrollbar { width: 4px; }
+        .terminal-box::-webkit-scrollbar-thumb { background: #1a242f; border-radius: 4px; }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            position: sticky;
+            top: 0;
+            background: #070b10;
+            padding-bottom: 4px;
+        }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-1 { background: #ff5f56; }
+        .dot-2 { background: #ffbd2e; }
+        .dot-3 { background: #27c93f; }
+
+        .terminal-title {
+            color: #5f758a;
+            font-size: 0.7rem;
+            margin-left: 5px;
+            text-transform: uppercase;
+        }
+
+        .log-line { margin-bottom: 4px; display: flex; }
+        .log-prefix { color: #00ffcc; margin-right: 8px; }
+        .log-text { color: #8fa0b0; }
+
+        /* Nút RUN */
+        .btn-run {
+            width: 100%;
+            background: #070b10;
+            border: 1px solid #27c93f;
+            color: #27c93f;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(39, 201, 63, 0.1);
+        }
+
+        .btn-run:hover {
+            background: rgba(39, 201, 63, 0.1);
+            box-shadow: 0 0 15px rgba(39, 201, 63, 0.4);
+            text-shadow: 0 0 5px #27c93f;
+        }
+
+        /* Hộp tính năng */
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111a24;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+            border-left: 4px solid #5f758a;
+            transition: all 0.3s ease;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+
+        .control-sub {
+            font-size: 0.65rem;
+            color: #5f758a;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Hiệu ứng phát sáng màu khi bật */
+        .control-item.active-cyan {
+            border-color: #00ffcc; border-left-color: #00ffcc;
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+            background: rgba(0, 255, 204, 0.03);
+        }
+        .control-item.active-cyan .control-label { color: #00ffcc; }
+
+        .control-item.active-yellow {
+            border-color: #ffbd2e; border-left-color: #ffbd2e;
+            box-shadow: 0 0 12px rgba(255, 189, 46, 0.3);
+            background: rgba(255, 189, 46, 0.03);
+        }
+        .control-item.active-yellow .control-label { color: #ffbd2e; }
+
+        .control-item.active-red {
+            border-color: #ff5f56; border-left-color: #ff5f56;
+            box-shadow: 0 0 12px rgba(255, 95, 86, 0.3);
+            background: rgba(255, 95, 86, 0.03);
+        }
+        .control-item.active-red .control-label { color: #ff5f56; }
+
+        /* MÀN HÌNH CHỮ BÍ ẨN KHI GÕ 3 NGÓN (MẶC ĐỊNH ẨN) */
+        .ghost-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            text-align: center;
+        }
+
+        .ghost-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            opacity: 0;
+            animation: glitchBlink 1.5s infinite alternate;
+        }
+
+        .gt-1 { color: #ff5f56; animation-delay: 0s; }
+        .gt-2 { color: #ffbd2e; animation-delay: 0.4s; }
+        .gt-3 { color: #00ffcc; animation-delay: 0.8s; }
+
+        @keyframes glitchBlink {
+            0% { opacity: 0.2; text-shadow: none; }
+            50% { opacity: 1; text-shadow: 0 0 10px currentColor; }
+            100% { opacity: 0.4; text-shadow: 0 0 4px currentColor; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container" id="app-container">
+        
+        <div class="login-screen" id="login-box">
+            <div class="login-title">ENTER SYSTEM KEY</div>
+            <input type="password" class="key-input" id="key-field" placeholder="Nhập Key Vào Đây...">
+            <button class="btn-login" onclick="checkKey()">LOGIN</button>
+            <div class="error-msg" id="error-text">❌ KEY KHÔNG CHÍNH XÁC!</div>
+        </div>
+
+        <div class="main-content" id="system-box">
+            
+            <div class="nav-tabs" id="nav-block">
+                <div class="tab-btn active" id="btn-main" onclick="switchTab('main')">MAIN</div>
+                <div class="tab-btn" id="btn-admin" onclick="switchTab('admin')">ADMIN</div>
+            </div>
+
+            <div class="admin-section" id="admin-box">
+                <div class="admin-name">minhbeo</div>
+                <div class="admin-buy-key">🛒 MUA KEY LIÊN HỆ SĐT: 0589379999</div>
+                <a href="tel:0589379999" class="admin-contact">📞 Call: 0589379999</a>
+                <a href="https://zalo.me/0589379999" target="_blank" class="admin-contact">💬 Zalo: Minh Béo</a>
+            </div>
+
+            <div id="main-box">
+                <div class="control-item active-cyan" id="item-90fps">
+                    <div>
+                        <span class="control-label">UNLOCK 90FPS</span>
+                        <span class="control-sub">Kích hoạt chế độ cao cấp</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chk-90fps" checked onchange="toggleGlow('item-90fps', 'chk-90fps', 'active-cyan')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button class="btn-run" id="run-btn" onclick="startCoding()">⚡ RUN CODE</button>
+
+                <div class="terminal-box" id="terminal-body">
+                    <div class="terminal-header">
+                        <div class="dot dot-1"></div>
+                        <div class="dot dot-2"></div>
+                        <div class="dot dot-3"></div>
+                        <span class="terminal-title">CODER TERMINAL</span>
+                    </div>
+                    <div class="log-line">
+                        <span class="log-prefix">$></span>
+                        <span class="log-text">system initialized... ready</span>
+                    </div>
+                </div>
+
+                <div class="control-item" id="item-fixrung">
+                    <div>
+                        <span class="control-label">FIX RUNG NHẸ TÂM</span>
+                        <span class="control-sub">Ổn định hồng tâm khi sấy súng</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chk-fixrung" onchange="toggleGlow('item-fixrung', 'chk-fixrung', 'active-yellow')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-item" id="item-bamdau">
+                    <div>
+                        <span class="control-label">BÁM ĐẦU AUTO</span>
+                        <span class="control-sub">Hỗ trợ tracking tự động vùng đầu</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chk-bamdau" onchange="toggleGlow('item-bamdau', 'chk-bamdau', 'active-red')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-item" id="item-aimlock">
+                    <div>
+                        <span class="control-label">AIMLOCK VIP</span>
+                        <span class="control-sub">Lock on target</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chk-aimlock" onchange="toggleGlow('item-aimlock', 'chk-aimlock', 'active-cyan')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-item" id="item-aimhead">
+                    <div>
+                        <span class="control-label">AIMHEAD</span>
+                        <span class="control-sub">Head tracking 500m</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="chk-aimhead" onchange="toggleGlow('item-aimhead', 'chk-aimhead', 'active-cyan')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="ghost-screen" id="ghost-block">
+            <div class="ghost-text gt-1">7 học</div>
+            <div class="ghost-text gt-2">7 chọ</div>
+            <div class="ghost-text gt-3">thái lọ</div>
+        </div>
+
+    </div>
+
+    <script>
+        let isKeyUnlocked = false;
+        let isHiddenMode = false;
+
+        // LẮNG NGHE SỰ KIỆN CHẠM 3 NGÓN TAY LÊN MÀN HÌNH
+        document.getElementById('app-container').addEventListener('touchstart', function(e) {
+            // Chỉ kích hoạt chức năng ẩn hiện sau khi đã mở khóa nhập đúng key thành công
+            if (!isKeyUnlocked) return;
+
+            // Kiểm tra số lượng ngón tay chạm cùng lúc là 3 ngón
+            if (e.touches.length === 3) {
+                e.preventDefault(); // Chặn thu phóng màn hình mặc định
+                
+                const systemBox = document.getElementById('system-box');
+                const ghostBlock = document.getElementById('ghost-block');
+
+                if (!isHiddenMode) {
+                    // Trạng thái: ẨN MENU, HIỆN CHỮ BÍ ẨN
+                    systemBox.style.opacity = '0';
+                    setTimeout(() => { systemBox.style.display = 'none'; }, 200); // Ẩn hẳn giao diện
+                    ghostBlock.style.display = 'block';
+                    isHiddenMode = true;
+                } else {
+                    // Trạng thái: HIỆN LẠI MENU NHƯ CŨ
+                    ghostBlock.style.display = 'none';
+                    systemBox.style.display = 'block';
+                    setTimeout(() => { systemBox.style.opacity = '1'; }, 50);
+                    isHiddenMode = false;
+                }
+            }
+        });
+
+        // Hàm bật/tắt viền phát sáng khi On/Off công tắc
+        function toggleGlow(itemId, checkboxId, activeClass) {
+            const item = document.getElementById(itemId);
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox.checked) {
+                item.classList.add(activeClass);
+            } else {
+                item.classList.remove(activeClass);
+            }
+        }
+
+        // Xác thực KEY đăng nhập
+        function checkKey() {
+            const keyInput = document.getElementById('key-field').value;
+            const loginBox = document.getElementById('login-box');
+            const systemBox = document.getElementById('system-box');
+            const errorText = document.getElementById('error-text');
+
+            if (keyInput === 'thaigay') {
+                loginBox.style.display = 'none';
+                systemBox.style.display = 'block';
+                isKeyUnlocked = true; // Kích hoạt quyền cảm ứng 3 ngón
+            } else {
+                errorText.style.display = 'block';
+            }
+        }
+
+        // Chuyển Tab MAIN / ADMIN
+        function switchTab(tab) {
+            const btnMain = document.getElementById('btn-main');
+            const btnAdmin = document.getElementById('btn-admin');
+            const mainBox = document.getElementById('main-box');
+            const adminBox = document.getElementById('admin-box');
+
+            if (tab === 'main') {
+                btnMain.classList.add('active');
+                btnAdmin.classList.remove('active');
+                mainBox.style.display = 'block';
+                adminBox.style.display = 'none';
+            } else {
+                btnAdmin.classList.add('active');
+                btnMain.classList.remove('active');
+                mainBox.style.display = 'none';
+                adminBox.style.display = 'block';
+            }
+        }
+
+        // Chạy Terminal giả lập
+        const fakeCodes = [
+            "fetching server hooks...",
+            "connecting to database core... OK",
+            "bypassing security system check",
+            "injecting tracking data segment: 0x7FFA4B22",
+            "stabilizing crosshair shaking vectors...",
+            "applying anti-recoil sensitive calibration... DONE",
+            "adjusting head-locking precise pixels...",
+            "overclocking core processing priority",
+            "optimizing internal response delay: -12ms",
+            "patching functional engine successfully!",
+            "PROCESS COMPLETED: CHẠY HỆ THỐNG THÀNH CÔNG!"
+        ];
+
+        let lineIndex = 0;
+
+        function startCoding() {
+            const terminal = document.getElementById('terminal-body');
+            const runBtn = document.getElementById('run-btn');
+            
+            runBtn.innerText = "⏳ INJECTING...";
+            runBtn.style.borderColor = "#ffbd2e";
+            runBtn.style.color = "#ffbd2e";
+
+            let interval = setInterval(() => {
+                if (lineIndex < fakeCodes.length) {
+                    const newLine = document.createElement('div');
+                    newLine.className = 'log-line';
+                    let textColor = '#8fa0b0';
+                    if (lineIndex === fakeCodes.length - 1) { textColor = '#27c93f'; }
+                    newLine.innerHTML = `<span class="log-prefix">$></span><span class="log-text" style="color: ${textColor}">${fakeCodes[lineIndex]}</span>`;
+                    terminal.appendChild(newLine);
+                    terminal.scrollTop = terminal.scrollHeight;
+                    lineIndex++;
+                } else {
+                    clearInterval(interval);
+                    runBtn.innerText = "⚡ RUN CODE";
+                    runBtn.style.borderColor = "#27c93f";
+                    runBtn.style.color = "#27c93f";
+                    lineIndex = 0;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
